@@ -10,4 +10,11 @@ allprojects {
     version = "1.0.0-SNAPSHOT"
 //    version = "0.0.1"
     group = "pw.binom.dns"
+
+    repositories {
+        mavenLocal()
+//        maven(url = "https://repo.binom.pw")
+        google()
+        mavenCentral()
+    }
 }

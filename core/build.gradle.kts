@@ -14,10 +14,10 @@ kotlin {
             }
         }
     }
-//    js {
-//        browser()
-//        nodejs()
-//    }
+    js {
+        browser()
+        nodejs()
+    }
     linuxX64()
     linuxArm64()
     mingwX64()
