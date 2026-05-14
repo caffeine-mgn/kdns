@@ -25,17 +25,16 @@ data class Resource(
             offset += Short.SIZE_BYTES
             val ttl = readInt(data, offset).toUInt()
             offset += Int.SIZE_BYTES
-            val dataSize = readShort(data, newPos + Short.SIZE_BYTES * 2 + Int.SIZE_BYTES)
+            val dataSize = readShort(data, offset)
             offset += Short.SIZE_BYTES
-//            val rdata = data.copyOfRange(fromIndex = offset, toIndex = offset + dataSize)
-            offset += dataSize
-            return Resource(
+            val resource= Resource(
                 name = name,
                 type = DnsType(type),
                 clazz = DnsClass(clazz),
                 ttl = ttl,
                 rdata = RData(data, offset, dataSize),
-            ) to offset
+            ) to offset + dataSize
+            return resource
         }
     }
 
