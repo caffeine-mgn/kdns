@@ -8,7 +8,7 @@ internal object StringUtils {
     fun read(data: ByteArray, offset: Int): Pair<String, Int> {
         val size = data[offset].toUByte().toInt()
         val result = data.copyOfRange(offset + 1, offset + 1 + size).decodeToString()
-        return result to (1 + size)
+        return result to (1 + size + offset)
     }
 
     fun write(data: String, sink: Sink) {
@@ -19,7 +19,7 @@ internal object StringUtils {
             if (rem <= 0) {
                 break
             }
-            val l = maxOf(bytes.size - pos, 255)
+            val l = minOf(bytes.size - pos, 255)
             sink.writeUByte(l.toUByte())
             sink.writeFully(bytes, offset = pos, length = l)
             pos += l
