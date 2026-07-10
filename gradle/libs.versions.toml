@@ -2,6 +2,7 @@
 kotlin = "2.3.10"
 ktor = "3.4.1"
 kotlinx-io = "0.9.0"
+dokka = "2.2.0"
 
 [libraries]
 kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
@@ -10,3 +11,5 @@ ktor-io = { module = "io.ktor:ktor-io", version.ref = "ktor" }
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
+vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version = "0.37.0" }
