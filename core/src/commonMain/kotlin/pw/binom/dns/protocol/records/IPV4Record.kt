@@ -3,12 +3,12 @@ package pw.binom.dns.protocol.records
 import pw.binom.dns.protocol.RData
 
 fun RData.Companion.ipv4(data: ByteArray, offset: Int = 0): RData {
-    check(offset + 4 <= data.size) { "Invalid ipv4 address: ${data.toHexString()}" }
+    check(offset + 4 <= data.size) { "Invalid ipv4 address at offset $offset" }
     return ipv4(
-        data[0].toUByte(),
-        data[1].toUByte(),
-        data[2].toUByte(),
-        data[3].toUByte(),
+        data[offset].toUByte(),
+        data[offset + 1].toUByte(),
+        data[offset + 2].toUByte(),
+        data[offset + 3].toUByte(),
     )
 }
 

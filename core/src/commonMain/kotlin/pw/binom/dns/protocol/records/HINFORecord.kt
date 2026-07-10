@@ -10,10 +10,10 @@ class HINFORecord(
     val os: String,
 ) {
     companion object {
-        fun from(data: ByteArray, offset: Int = 0) {
+        fun from(data: ByteArray, offset: Int = 0): HINFORecord {
             val (cpu, pos) = StringUtils.read(data, offset)
             val (os, _) = StringUtils.read(data, pos)
-            HINFORecord(
+            return HINFORecord(
                 cpu = cpu,
                 os = os,
             )

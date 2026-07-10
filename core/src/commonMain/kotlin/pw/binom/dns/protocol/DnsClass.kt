@@ -28,6 +28,6 @@ value class DnsClass(val raw: UShort) {
         /**
          * Только в вопросе - "любой класс"
          */
-        val ANY = DnsClass(254u)
+        val ANY = DnsClass(255u)
     }
 }

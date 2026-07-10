@@ -43,7 +43,8 @@ data class Resource(
         sink.writeShort(type.raw.toShort())
         sink.writeShort(clazz.raw.toShort())
         sink.writeUInt(ttl)
-        sink.writeUShort(rdata.raw.size.toUInt().toUShort())
-        sink.write(rdata.raw)
+        val subData = rdata.subData
+        sink.writeUShort(subData.size.toUInt().toUShort())
+        sink.write(subData)
     }
 }

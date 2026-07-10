@@ -33,6 +33,6 @@ value class Opcode(val code: Byte) {
         /**
          * DNS Stateful Operations (DSO, RFC8490)
          */
-        val DSO = Opcode(5)
+        val DSO = Opcode(6)
     }
 }
