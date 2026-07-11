@@ -42,8 +42,9 @@
 - [ ] **#11** Счётчики QDCOUNT/ANCOUNT/NSCOUNT/ARCOUNT в DnsPackage.read() читаются как signed Short и используются в `0 until qdcount`. При значениях > 32767 `until` даёт неверный диапазон.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/DnsPackage.kt:29-50`*
 
-- [ ] **#12** normalizedRdata() имеет «мёртвый» ранний return — условие `offset==0 && size==raw.size.toShort()` никогда не срабатывает из-за дизайна RData.  
+- [x] **#12** normalizedRdata() имеет «мёртвый» ранний return — условие `offset==0 && size==raw.size` не срабатывало из-за `size=0`.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/utils/ResourceExtensions.kt:12-15`*
+  ✅ Починено автоматически исправлениями #8 (size=raw.size) и #9 (Short→UShort)
 
 - [ ] **#13** Нет активных тестов — `MainTest.kt` полностью закомментирован.  
   *Файл: `core/src/jvmMain/kotlin/pw/binom/dns/MainTest.kt`*
