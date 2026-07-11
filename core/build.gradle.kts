@@ -13,7 +13,8 @@ val skPass = providers.environmentVariable("SIGNING_KEY_PASSWORD").orNull
 
 if (sk != null) {
     logger.lifecycle("[signing] SIGNING_KEY found, length=${sk.length}")
-} else {
+    logger.lifecycle("[signing] KEY has literal \\n: ${sk.contains("\\n")}")
+    logger.lifecycle("[signing] KEY has real newlines: ${sk.contains("\n")}")
     logger.lifecycle("[signing] SIGNING_KEY env var is NOT SET")
 }
 
@@ -30,10 +31,13 @@ if (skPass != null) {
 }
 
 // ======== Явная настройка signing для CI ========
+// В GitHub Secrets ключ может храниться без реальных переносов строк (как \n).
+// Bouncy Castle требует настоящие newline-символы, поэтому заменяем.
 if (sk != null && skId != null && skPass != null) {
+    val normalizedKey = sk.replace("\n", "\n")
     pluginManager.withPlugin("signing") {
         extensions.configure<org.gradle.plugins.signing.SigningExtension>("signing") {
-            useInMemoryPgpKeys(sk, skId, skPass)
+            useInMemoryPgpKeys(normalizedKey, skId, skPass)
             logger.lifecycle("[signing] Configured in-memory PGP signing: keyId=${skId}")
         }
     }
