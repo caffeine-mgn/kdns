@@ -47,9 +47,6 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.kotlinx.io.core)
-//            api(libs.kotlinx.coroutines.core)
-            api(libs.ktor.io)
-//            api(libs.ktor.server.cio)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

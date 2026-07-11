@@ -22,6 +22,9 @@ fun Resource.normalizedRdata(): RData? {
         DnsType.NS -> RData.ns(rdata.ns())
         DnsType.PTR -> RData.ptr(rdata.ptr())
         DnsType.TXT -> RData.txt(rdata.txt())
-        else -> null
+        else -> {
+            val data = rdata.subData
+            RData(data, 0, data.size.toUShort())
+        }
     }
 }

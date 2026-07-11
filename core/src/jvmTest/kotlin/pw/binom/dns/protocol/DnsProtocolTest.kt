@@ -506,11 +506,15 @@ class DnsProtocolTest {
     }
 
     @Test
-    fun `normalizedRdata returns null for unsupported type`() {
+    fun `normalizedRdata falls back to raw bytes for unsupported type`() {
         val raw = byteArrayOf(0, 0, 0, 0, 1, 2, 3, 4)
         val rd = RData(raw, offset = 4, size = 4u)
         val resource = Resource("test", DnsType.SRV, DnsClass.IN, 300u, rd)
-        assertNull(resource.normalizedRdata())
+        val normalized = resource.normalizedRdata()
+        assertNotNull(normalized)
+        assertEquals(0, normalized.offset)
+        assertEquals(4u, normalized.size)
+        assertTrue(byteArrayOf(1, 2, 3, 4).contentEquals(normalized.subData))
     }
 
     // ========================================================================

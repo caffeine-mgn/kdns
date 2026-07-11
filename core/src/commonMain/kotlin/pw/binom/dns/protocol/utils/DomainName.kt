@@ -1,10 +1,5 @@
 package pw.binom.dns.protocol.utils
 
-import io.ktor.utils.io.charsets.Charsets
-import io.ktor.utils.io.charsets.decode
-import io.ktor.utils.io.core.buildPacket
-import io.ktor.utils.io.core.toByteArray
-
 internal object DomainName {
     /**
      * Читает QNAME из DNS-пакета (ByteArray) с поддержкой сжатия.
@@ -52,9 +47,7 @@ internal object DomainName {
                     if (pos + len >= data.size) throw IllegalArgumentException("Truncated label")
                     pos++
                     val rawBytes = data.copyOfRange(pos, pos + len)
-                    val rawLabel = Charsets.ISO_8859_1.newDecoder().decode(buildPacket {
-                        write(rawBytes)
-                    })
+                    val rawLabel = rawBytes.joinToString("") { it.toInt().toChar().toString() }
                     val label = if (rawLabel.startsWith("xn--", ignoreCase = true))
                         Punycode.decode(rawLabel.substring(4))
                     else
@@ -79,7 +72,7 @@ internal object DomainName {
             if (label.isEmpty()) continue
             // Преобразуем в ASCII (Punycode, если есть не-ASCII)
             val asciiLabel = if (label.all { it.code < 128 }) label else "xn--${Punycode.encode(label)}"
-            val bytes = asciiLabel.toByteArray(Charsets.ISO_8859_1)
+            val bytes = asciiLabel.encodeToByteArray()
             require(bytes.size in 1..63) { "Label '${label}' is ${bytes.size} bytes (max 63)" }
             result.add(bytes.size.toByte())
             result.addAll(bytes.toList())

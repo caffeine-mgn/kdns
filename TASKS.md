@@ -59,12 +59,16 @@
 
 - [ ] **#15** JVM target 1.8 — Java 8 давно EOL. Рекомендуется JVM_11 или JVM_17.  
   *Файл: `core/build.gradle.kts:12`*
+  ⏭ Пропущено: библиотека не использует JVM API, 1.8 даёт максимальную совместимость
 
-- [ ] **#16** Смешение kotlinx-io и ktor-io API в одном модуле. Усложняет поддержку в KMP.  
+- [x] **#16** Смешение kotlinx-io и ktor-io API в одном модуле. Усложняет поддержку в KMP.  
   *Файл: `core/build.gradle.kts:43-44`*
+  ✅ Исправлено: ktor-io удалён, заменён на kotlinx-io
 
-- [ ] **#17** Закомментированные зависимости (`kotlinx.coroutines.core`, `ktor.server.cio`) — стоит удалить.  
+- [x] **#17** Закомментированные зависимости (`kotlinx.coroutines.core`, `ktor.server.cio`) — стоит удалить.  
   *Файл: `core/build.gradle.kts:45-46`*
+  ✅ Удалены
 
-- [ ] **#18** normalizedRdata() возвращает `null` для SRV, CAA, DS, DNSKEY, HTTPS, HINFO — неожиданно для клиентов.  
+- [x] **#18** normalizedRdata() возвращает `null` для SRV, CAA, DS, DNSKEY, HTTPS, HINFO — неожиданно для клиентов.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/utils/ResourceExtensions.kt:23`*
+  ✅ Исправлено: `else` теперь переупаковывает `subData` в новый RData вместо `null`

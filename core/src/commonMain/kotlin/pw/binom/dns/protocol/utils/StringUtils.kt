@@ -1,6 +1,5 @@
 package pw.binom.dns.protocol.utils
 
-import io.ktor.utils.io.core.writeFully
 import kotlinx.io.Sink
 import kotlinx.io.writeUByte
 
@@ -21,7 +20,7 @@ internal object StringUtils {
             }
             val l = minOf(bytes.size - pos, 255)
             sink.writeUByte(l.toUByte())
-            sink.writeFully(bytes, offset = pos, length = l)
+            sink.write(bytes, startIndex = pos, endIndex = pos + l)
             pos += l
         }
     }
