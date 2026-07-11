@@ -66,12 +66,15 @@ jobs:
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSWORD }}
         run: |
+          set +e
           # Импортируем ключ
           printf '%b' "$GPG_KEY" | gpg --batch --import --passphrase "$GPG_PASSPHRASE" 2>&1
-          echo "Import done"
-          # Экспортируем в binary secring (ошибки в stderr, stdout в файл)
-          gpg --batch --yes --export-secret-keys > /tmp/secring.gpg
-          echo "Export done, size: $(wc -c < /tmp/secring.gpg) bytes"
+          echo "Import done, exit code: $?"
+          # Экспортируем в binary secring
+          gpg --batch --yes --export-secret-keys > /tmp/secring.gpg 2>&1
+          EC=$?
+          echo "Export done, exit code: $EC, size: $(wc -c < /tmp/secring.gpg) bytes"
+          set -e
           
           ./gradlew :core:publishToMavenCentral \
             -Pversion=${{ github.ref_name }} \
