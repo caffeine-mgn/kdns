@@ -48,8 +48,9 @@
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/utils/ResourceExtensions.kt:12-15`*
   ✅ Починено автоматически исправлениями #8 (size=raw.size) и #9 (Short→UShort)
 
-- [ ] **#13** Нет активных тестов — `MainTest.kt` полностью закомментирован.  
-  *Файл: `core/src/jvmMain/kotlin/pw/binom/dns/MainTest.kt`*
+- [x] **#13** Нет активных тестов — `MainTest.kt` полностью закомментирован.  
+  *Файл: `core/src/jvmMain/kotlin/pow/binom/dns/MainTest.kt`*
+  ✅ Создан `core/src/jvmTest/.../DnsProtocolTest.kt` — 42 теста
 
 ## 🟡 Умеренные / мелкие замечания
 

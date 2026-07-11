@@ -51,6 +51,9 @@ kotlin {
             api(libs.ktor.io)
 //            api(libs.ktor.server.cio)
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
     }
 }
 
