@@ -31,10 +31,22 @@ if (skPass != null) {
 }
 
 // ======== Явная настройка signing для CI ========
-// В GitHub Secrets ключ может храниться без реальных переносов строк (как \n).
-// Bouncy Castle требует настоящие newline-символы, поэтому заменяем.
+// В GitHub Secrets ключ может быть:
+//   1) с реальными переносами — используем как есть
+//   2) с литеральными \n — заменяем на переносы
+//   3) одной строкой без переносов — переформатируем в armored
 if (sk != null && skId != null && skPass != null) {
-    val normalizedKey = sk.replace("\n", "\n")
+    val normalizedKey = when {
+        sk.contains("\n") -> sk
+        sk.contains("\\n") -> sk.replace("\\n", "\n")
+        else -> {
+            val header = "-----BEGIN PGP PRIVATE KEY BLOCK-----"
+            val footer = "-----END PGP PRIVATE KEY BLOCK-----"
+            val body = sk.removePrefix(header).removeSuffix(footer).trim()
+            val wrapped = body.chunked(64).joinToString("\n")
+            "$header\n$wrapped\n$footer"
+        }
+    }
     pluginManager.withPlugin("signing") {
         extensions.configure<org.gradle.plugins.signing.SigningExtension>("signing") {
             useInMemoryPgpKeys(normalizedKey, skId, skPass)
