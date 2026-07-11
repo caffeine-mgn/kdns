@@ -62,10 +62,15 @@ jobs:
 
       - name: Publish to Maven Central
         env:
-          SIGNING_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          SIGNING_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.GPG_PASSWORD }}
-          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
-          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
-          ./gradlew :core:publishToMavenCentral -Pversion=${{ github.ref_name }}
+          # Ключ в GitHub Secrets одной строкой — кодируем в base64 для безопасной передачи
+          KEY_B64=$(echo -n "$GPG_KEY" | base64 -w0)
+          ./gradlew :core:publishToMavenCentral \
+            -Pversion=${{ github.ref_name }} \
+            -PsigningInMemoryKey="$KEY_B64" \
+            -PsigningInMemoryKeyIsBase64=true \
+            -PsigningInMemoryKeyId=${{ secrets.GPG_KEY_ID }} \
+            -PsigningInMemoryKeyPassword=${{ secrets.GPG_PASSWORD }} \
+            -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
+            -PmavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }}
