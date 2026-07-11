@@ -6,6 +6,37 @@ plugins {
     alias(libs.plugins.vanniktech.maven.publish)
 }
 
+// ======== Debug: проверяем, что видны переменные окружения ========
+val sk = providers.environmentVariable("SIGNING_KEY").orNull
+val skId = providers.environmentVariable("SIGNING_KEY_ID").orNull
+val skPass = providers.environmentVariable("SIGNING_KEY_PASSWORD").orNull
+
+if (sk != null) {
+    logger.lifecycle("[signing] SIGNING_KEY found, length=${sk.length}")
+} else {
+    logger.lifecycle("[signing] SIGNING_KEY env var is NOT SET")
+}
+
+if (skId != null) {
+    logger.lifecycle("[signing] SIGNING_KEY_ID found, value=[${skId}]")
+} else {
+    logger.lifecycle("[signing] SIGNING_KEY_ID env var is NOT SET")
+}
+
+if (skPass != null) {
+    logger.lifecycle("[signing] SIGNING_KEY_PASSWORD found, length=${skPass.length}")
+} else {
+    logger.lifecycle("[signing] SIGNING_KEY_PASSWORD env var is NOT SET")
+}
+
+// ======== Явная настройка signing для CI ========
+if (sk != null && skId != null && skPass != null) {
+    extensions.configure<org.gradle.plugins.signing.SigningExtension>("signing") {
+        useInMemoryPgpKeys(sk, skId, skPass)
+        logger.lifecycle("[signing] Configured in-memory PGP signing: keyId=${skId}")
+    }
+}
+
 kotlin {
     jvm {
         compilations.all {

@@ -62,13 +62,10 @@ jobs:
 
       - name: Publish to Maven Central
         env:
-          GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          SIGNING_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          SIGNING_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.GPG_PASSWORD }}
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
         run: |
-          echo "$GPG_KEY" > /tmp/signing-key.asc
-          ./gradlew :core:publishToMavenCentral \
-            -Pversion=${{ github.ref_name }} \
-            -PsigningInMemoryKey="$(cat /tmp/signing-key.asc)" \
-            -PsigningInMemoryKeyId=${{ secrets.GPG_KEY_ID }} \
-            -PsigningInMemoryKeyPassword=${{ secrets.GPG_PASSWORD }}
+          ./gradlew :core:publishToMavenCentral -Pversion=${{ github.ref_name }}
