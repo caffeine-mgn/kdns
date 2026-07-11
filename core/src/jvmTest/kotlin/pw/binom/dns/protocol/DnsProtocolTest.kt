@@ -832,4 +832,94 @@ class DnsProtocolTest {
         assertEquals(1232u, opt.clazz.raw)
         assertEquals(optTtl, opt.ttl)
     }
+
+    // ========================================================================
+    // Dynamic Updates (RFC 2136)
+    // ========================================================================
+
+    @Test
+    fun `DnsUpdate write and read roundtrip with add record`() {
+        val header = DnsHeader(
+            id = 42, qr = false, opcode = Opcode.UPDATE,
+            aa = false, tc = false, rd = false, ra = false, z = 0, rcode = RCode.NOERROR,
+        )
+        val zone = Question("example.com", DnsType.SOA, DnsClass.IN)
+        val updateRecord = Resource(
+            "host.example.com", DnsType.A, DnsClass.IN, 300u, RData.ipv4("10.0.0.1"),
+        )
+
+        val original = DnsUpdate(
+            header = header,
+            zone = zone,
+            prerequisite = emptyList(),
+            update = listOf(updateRecord),
+            additional = emptyList(),
+        )
+
+        val buffer = Buffer()
+        original.write(buffer)
+        val bytes = buffer.readByteArray()
+        val restored = DnsUpdate.read(bytes)
+
+        assertEquals(Opcode.UPDATE.code, restored.header.opcode.code)
+        assertEquals("example.com", restored.zone.name)
+        assertEquals(1, restored.update.size)
+        assertEquals("host.example.com", restored.update[0].name)
+        assertEquals("10.0.0.1", restored.update[0].rdata.ipv4())
+    }
+
+    @Test
+    fun `DnsUpdate with prerequisite NONE and delete`() {
+        val header = DnsHeader(
+            id = 7, qr = false, opcode = Opcode.UPDATE,
+            aa = false, tc = false, rd = false, ra = false, z = 0, rcode = RCode.NOERROR,
+        )
+        // Prerequisite: host must NOT exist
+        val prereq = Resource("old.example.com", DnsType.AAAA, DnsClass.NONE, 0u, RData(byteArrayOf(), 0, 0u))
+        // Delete all A records
+        val delete = Resource("old.example.com", DnsType.A, DnsClass.NONE, 0u, RData(byteArrayOf(), 0, 0u))
+        val zone = Question("example.com", DnsType.SOA, DnsClass.IN)
+
+        val original = DnsUpdate(
+            header = header,
+            zone = zone,
+            prerequisite = listOf(prereq),
+            update = listOf(delete),
+            additional = emptyList(),
+        )
+
+        val buffer = Buffer()
+        original.write(buffer)
+        val bytes = buffer.readByteArray()
+        val restored = DnsUpdate.read(bytes)
+
+        assertEquals(1, restored.prerequisite.size)
+        assertEquals(DnsClass.NONE.raw, restored.prerequisite[0].clazz.raw)
+        assertEquals("old.example.com", restored.prerequisite[0].name)
+        assertEquals(1, restored.update.size)
+        assertEquals(DnsClass.NONE.raw, restored.update[0].clazz.raw)
+        assertEquals(DnsType.A.raw, restored.update[0].type.raw)
+    }
+
+    @Test
+    fun `DnsUpdate requires OPCODE UPDATE`() {
+        val header = DnsHeader(
+            id = 1, qr = false, opcode = Opcode.QUERY,
+            aa = false, tc = false, rd = false, ra = false, z = 0, rcode = RCode.NOERROR,
+        )
+        val pkg = DnsPackage(
+            header = header,
+            queries = listOf(Question("test", DnsType.A, DnsClass.IN)),
+            answer = emptyList(),
+            authority = emptyList(),
+            additional = emptyList(),
+        )
+        val buffer = Buffer()
+        pkg.write(buffer)
+        val bytes = buffer.readByteArray()
+
+        assertFailsWith<IllegalArgumentException> {
+            DnsUpdate.read(bytes)
+        }
+    }
 }
