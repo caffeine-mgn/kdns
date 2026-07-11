@@ -36,10 +36,24 @@ if (skPass != null) {
 //   2) с литеральными \n — заменяем на переносы
 //   3) одной строкой без переносов — переформатируем в armored
 if (sk != null && skId != null && skPass != null) {
+    // Debug: проверяем формат ключа ДО нормализации
+    logger.lifecycle("[signing] RAW key starts with BEGIN: ${sk.startsWith("-----BEGIN")}")
+    logger.lifecycle("[signing] RAW key ends with END: ${sk.endsWith("-----")}")
+    logger.lifecycle("[signing] RAW key length: ${sk.length}")
+    logger.lifecycle("[signing] RAW first 40 chars: ${sk.take(40)}")
+    logger.lifecycle("[signing] RAW last 40 chars: ${sk.takeLast(40)}")
+    
     val normalizedKey = when {
-        sk.contains("\n") -> sk
-        sk.contains("\\n") -> sk.replace("\\n", "\n")
+        sk.contains("\n") -> {
+            logger.lifecycle("[signing] Normalize: has real newlines")
+            sk
+        }
+        sk.contains("\\n") -> {
+            logger.lifecycle("[signing] Normalize: has literal \\n")
+            sk.replace("\\n", "\n")
+        }
         else -> {
+            logger.lifecycle("[signing] Normalize: single line, wrapping at 64 chars")
             val header = "-----BEGIN PGP PRIVATE KEY BLOCK-----"
             val footer = "-----END PGP PRIVATE KEY BLOCK-----"
             val body = sk.removePrefix(header).removeSuffix(footer).trim()
@@ -47,6 +61,10 @@ if (sk != null && skId != null && skPass != null) {
             "$header\n$wrapped\n$footer"
         }
     }
+    logger.lifecycle("[signing] Normalized key length: ${normalizedKey.length}")
+    logger.lifecycle("[signing] Normalized first line: ${normalizedKey.lines().firstOrNull()}")
+    logger.lifecycle("[signing] Normalized last line: ${normalizedKey.lines().lastOrNull()}")
+    
     pluginManager.withPlugin("signing") {
         extensions.configure<org.gradle.plugins.signing.SigningExtension>("signing") {
             useInMemoryPgpKeys(normalizedKey, skId, skPass)
