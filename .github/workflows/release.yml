@@ -22,6 +22,44 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Check secrets
+        run: |
+          echo "=== Проверка secrets ==="
+          
+          if [ -z "${{ secrets.MAVEN_CENTRAL_USERNAME }}" ]; then
+            echo "MAVEN_CENTRAL_USERNAME: пустой ❌"
+          else
+            LEN="${{ secrets.MAVEN_CENTRAL_USERNAME }}" && echo "MAVEN_CENTRAL_USERNAME: OK (длина ${#LEN})"
+          fi
+          
+          if [ -z "${{ secrets.MAVEN_CENTRAL_PASSWORD }}" ]; then
+            echo "MAVEN_CENTRAL_PASSWORD: пустой ❌"
+          else
+            LEN="${{ secrets.MAVEN_CENTRAL_PASSWORD }}" && echo "MAVEN_CENTRAL_PASSWORD: OK (длина ${#LEN})"
+          fi
+          
+          if [ -z "${{ secrets.GPG_KEY_ID }}" ]; then
+            echo "GPG_KEY_ID: пустой ❌"
+          else
+            echo "GPG_KEY_ID: OK (длина ${#GPG_KEY_ID})"
+          fi
+          
+          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
+            echo "GPG_PRIVATE_KEY: пустой ❌"
+          else
+            HEADER="${GPG_PRIVATE_KEY:0:30}"
+            echo "GPG_PRIVATE_KEY: OK (длина ${#GPG_PRIVATE_KEY}, начинается с: $HEADER...)"
+          fi
+          
+          if [ -z "${{ secrets.GPG_PASSWORD }}" ]; then
+            echo "GPG_PASSWORD: пустой ❌"
+          else
+            LEN="${{ secrets.GPG_PASSWORD }}" && echo "GPG_PASSWORD: OK (длина ${#LEN})"
+          fi
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+
       - name: Publish to Maven Central
         run: ./gradlew :core:publishToMavenCentral -Pversion=${{ github.ref_name }}
         env:
