@@ -72,14 +72,13 @@ jobs:
           gpg --list-keys --keyid-format LONG 2>&1 || true
           gpg --list-secret-keys --keyid-format LONG 2>&1 || true
           
-          # Экспортируем в keyring для Gradle
-          KEY_ID="$GPG_KEY_ID"
-          gpg --batch --yes --export-secret-keys -a "$KEY_ID" > /tmp/secring.gpg 2>&1
+          # Экспортируем в keyring для Gradle (без фильтра по ID — subkey != primary key)
+          gpg --batch --yes --export-secret-keys -a > /tmp/secring.gpg 2>&1
           echo "Exported secret key ring"
           
           ./gradlew :core:publishToMavenCentral \
             -Pversion=${{ github.ref_name }} \
-            -Psigning.keyId=$KEY_ID \
+            -Psigning.keyId=$GPG_KEY_ID \
             -Psigning.password="$GPG_PASSPHRASE" \
             -Psigning.secretKeyRingFile=/tmp/secring.gpg \
             -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
