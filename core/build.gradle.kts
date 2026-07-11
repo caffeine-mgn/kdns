@@ -97,3 +97,15 @@ mavenPublishing {
         }
     }
 }
+
+pluginManager.withPlugin("signing") {
+    val key = providers.gradleProperty("signingInMemoryKey").orNull
+    val keyId = providers.gradleProperty("signingInMemoryKeyId").orNull
+    val password = providers.gradleProperty("signingInMemoryKeyPassword").orNull
+    if (key != null && keyId != null && password != null) {
+        val normalizedKey = key.replace("\\n", "\n")
+        logger.lifecycle("[signing] Normalized key via build.gradle.kts, length=${normalizedKey.length}")
+        extensions.getByType(org.gradle.plugins.signing.SigningExtension::class.java)
+            .useInMemoryPgpKeys(normalizedKey, keyId, password)
+    }
+}

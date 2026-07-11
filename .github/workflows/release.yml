@@ -64,14 +64,9 @@ jobs:
         env:
           GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
-          # Конвертируем \n в реальные переносы, затем base64
-          KEY_B64=$(printf '%b' "$GPG_KEY" | base64 -w0)
-          echo 'Key:'
-          echo $KEY_B64
           ./gradlew :core:publishToMavenCentral \
             -Pversion=${{ github.ref_name }} \
-            -PsigningInMemoryKey="$KEY_B64" \
-            -PsigningInMemoryKeyIsBase64=true \
+            -PsigningInMemoryKey="$GPG_KEY" \
             -PsigningInMemoryKeyId=${{ secrets.GPG_KEY_ID }} \
             -PsigningInMemoryKeyPassword=${{ secrets.GPG_PASSWORD }} \
             -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
