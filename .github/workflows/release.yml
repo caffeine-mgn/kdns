@@ -69,10 +69,11 @@ jobs:
           # Импортируем GPG ключ
           printf '%b' "$GPG_KEY" | gpg --batch --import --passphrase "$GPG_PASSPHRASE" 2>&1
           echo "GPG keys imported:"
-          gpg --list-keys --keyid-format LONG 2>&1 | grep -E "^pub|^sec"
+          gpg --list-keys --keyid-format LONG 2>&1 || true
+          gpg --list-secret-keys --keyid-format LONG 2>&1 || true
           
           # Экспортируем в keyring для Gradle
-          KEY_ID=$(echo "$GPG_KEY_ID" | tr -d ' ')
+          KEY_ID="$GPG_KEY_ID"
           gpg --batch --yes --export-secret-keys -a "$KEY_ID" > /tmp/secring.gpg 2>&1
           echo "Exported secret key ring"
           
