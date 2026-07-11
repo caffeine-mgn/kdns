@@ -36,8 +36,9 @@
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/RData.kt:6`*
   ✅ Исправлено: `Short` → `UShort`
 
-- [ ] **#10** NumberUtils (readInt/readShort) не проверяет границы массива перед обращением по индексу — `ArrayIndexOutOfBoundsException` при неверном offset.  
+- [x] **#10** NumberUtils (readInt/readShort) не проверяет границы массива перед обращением по индексу — `ArrayIndexOutOfBoundsException` при неверном offset.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/utils/NumberUtils.kt:3-13`*
+  ✅ Исправлено: добавлен `require` с проверкой границ
 
 - [x] **#11** Счётчики QDCOUNT/ANCOUNT/NSCOUNT/ARCOUNT в DnsPackage.read() читаются как signed Short и используются в `0 until qdcount`. При значениях > 32767 `until` даёт неверный диапазон.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/DnsPackage.kt:29-50`*
