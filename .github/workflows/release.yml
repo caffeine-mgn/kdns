@@ -27,14 +27,10 @@ jobs:
           GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSWORD }}
         run: |
-          # write key to a file, import, configure gpg for non-interactive use
           printf '%b' "$GPG_KEY" | gpg --batch --import --passphrase "$GPG_PASSPHRASE"
           echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
           echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
           gpgconf --reload gpg-agent
-          
-          echo "=== Keys in keyring ==="
-          gpg --list-secret-keys
 
       - name: Publish to Maven Central
         env:
@@ -43,9 +39,8 @@ jobs:
         run: |
           ./gradlew :core:publishToMavenCentral \
             -Pversion=${{ github.ref_name }} \
-            -Psigning.gnupg.executable=gpg \
+            -PsigningUseGpg=true \
             -Psigning.gnupg.keyName="$GPG_KEY_ID" \
             -Psigning.gnupg.passphrase="$GPG_PASSPHRASE" \
-            -Psigning.gnupg.useLegacyGpg=false \
             -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
             -PmavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }}

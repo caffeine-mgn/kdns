@@ -101,6 +101,11 @@ mavenPublishing {
 }
 
 pluginManager.withPlugin("signing") {
+    val useGpg = providers.gradleProperty("signingUseGpg").orNull?.toBoolean() ?: false
+    if (useGpg) {
+        logger.lifecycle("[signing] Using gpg command-line tool")
+        extensions.getByType(SigningExtension::class.java).useGpgCmd()
+    }
     val key = providers.gradleProperty("signingInMemoryKey").orNull
     val keyId = providers.gradleProperty("signingInMemoryKeyId").orNull
     val password = providers.gradleProperty("signingInMemoryKeyPassword").orNull
