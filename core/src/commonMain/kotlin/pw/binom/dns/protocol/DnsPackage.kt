@@ -16,13 +16,13 @@ data class DnsPackage(
             var pos = 0
             val header = DnsHeader.read(data, offset = pos)
             pos += DnsHeader.SIZE_BYTES
-            val qdcount = readShort(data, pos)
+            val qdcount = readShort(data, pos).toUShort().toInt()
             pos += Short.SIZE_BYTES
-            val ancount = readShort(data, pos)
+            val ancount = readShort(data, pos).toUShort().toInt()
             pos += Short.SIZE_BYTES
-            val nscount = readShort(data, pos)
+            val nscount = readShort(data, pos).toUShort().toInt()
             pos += Short.SIZE_BYTES
-            val arcount = readShort(data, pos)
+            val arcount = readShort(data, pos).toUShort().toInt()
             pos += Short.SIZE_BYTES
 
             val queries = (0 until qdcount).map {

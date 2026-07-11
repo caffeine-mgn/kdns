@@ -39,8 +39,9 @@
 - [ ] **#10** NumberUtils (readInt/readShort) не проверяет границы массива перед обращением по индексу — `ArrayIndexOutOfBoundsException` при неверном offset.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/utils/NumberUtils.kt:3-13`*
 
-- [ ] **#11** Счётчики QDCOUNT/ANCOUNT/NSCOUNT/ARCOUNT в DnsPackage.read() читаются как signed Short и используются в `0 until qdcount`. При значениях > 32767 `until` даёт неверный диапазон.  
+- [x] **#11** Счётчики QDCOUNT/ANCOUNT/NSCOUNT/ARCOUNT в DnsPackage.read() читаются как signed Short и используются в `0 until qdcount`. При значениях > 32767 `until` даёт неверный диапазон.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/DnsPackage.kt:29-50`*
+  ✅ Исправлено: `.toUShort().toInt()` — теперь беззнаковое преобразование
 
 - [x] **#12** normalizedRdata() имеет «мёртвый» ранний return — условие `offset==0 && size==raw.size` не срабатывало из-за `size=0`.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/utils/ResourceExtensions.kt:12-15`*
