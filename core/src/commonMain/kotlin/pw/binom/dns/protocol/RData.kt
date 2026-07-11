@@ -8,9 +8,32 @@ class RData(val raw: ByteArray, val offset: Int, val size: Short) {
         get() = raw.copyOfRange(fromIndex = offset, toIndex = offset + size)
 
     companion object {
-        fun cname(name: String) = RData(DomainName.write(name), 0, 0)
-        fun ns(name: String) = RData(DomainName.write(name), 0, 0)
-        fun ptr(name: String) = RData(DomainName.write(name), 0, 0)
+        fun cname(name: String): RData {
+            val data = DomainName.write(name)
+            return RData(
+                raw = data,
+                offset = 0,
+                size = data.size.toShort(),
+            )
+        }
+
+        fun ns(name: String): RData {
+            val data = DomainName.write(name)
+            return RData(
+                raw = data,
+                offset = 0,
+                size = data.size.toShort(),
+            )
+        }
+
+        fun ptr(name: String): RData {
+            val data = DomainName.write(name)
+            return RData(
+                raw = data,
+                offset = 0,
+                size = data.size.toShort(),
+            )
+        }
     }
 
 

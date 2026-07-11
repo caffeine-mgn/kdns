@@ -28,7 +28,15 @@ class HINFORecord(
     }
 }
 
-fun RData.Companion.hinfo(record: HINFORecord) = RData(record.toByteArray(), 0, 0)
+fun RData.Companion.hinfo(record: HINFORecord): RData {
+    val data = record.toByteArray()
+    return RData(
+        raw = data,
+        offset = 0,
+        size = data.size.toShort(),
+    )
+}
+
 fun RData.Companion.hinfo(
     cpu: String,
     os: String,

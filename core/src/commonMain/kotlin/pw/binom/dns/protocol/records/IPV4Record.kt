@@ -13,7 +13,11 @@ fun RData.Companion.ipv4(data: ByteArray, offset: Int = 0): RData {
 }
 
 fun RData.Companion.ipv4(b1: UByte, b2: UByte, b3: UByte, b4: UByte) =
-    RData(byteArrayOf(b1.toByte(), b2.toByte(), b3.toByte(), b4.toByte()), 0, 0)
+    RData(
+        raw = byteArrayOf(b1.toByte(), b2.toByte(), b3.toByte(), b4.toByte()),
+        offset = 0,
+        size = 4,
+    )
 
 fun RData.Companion.ipv4(address: String): RData {
     val items = address.split(".")
@@ -27,7 +31,7 @@ fun RData.Companion.ipv4(address: String): RData {
 }
 
 fun RData.ipv4(): String {
-    val raw=subData
+    val raw = subData
     check(raw.size == 4) { "Invalid ipv4 size: ${raw.size}" }
     return "${raw[0].toUByte()}.${raw[1].toUByte()}.${raw[2].toUByte()}.${raw[3].toUByte()}"
 }

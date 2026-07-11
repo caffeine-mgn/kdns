@@ -28,8 +28,9 @@
   *Файлы: `core/src/commonMain/kotlin/pw/binom/dns/protocol/records/MxRecord.kt:12-15`, `RData.kt:39`*
   ✅ Исправлено: добавлен параметр `offset`, передаётся `RData.offset`
 
-- [ ] **#8** Все фабрики RData (cname, ns, ptr, ipv4, ipv6, mx, soa, txt, hinfo) передают `size=0`. `subData` всегда пуст для сконструированных записей.  
+- [x] **#8** Все фабрики RData (cname, ns, ptr, ipv4, ipv6, mx, soa, txt, hinfo) передают `size=0`. `subData` всегда пуст для сконструированных записей.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/RData.kt:11-13`*
+  ✅ Исправлено: size = raw.size во всех фабриках
 
 - [ ] **#9** RData.size объявлен как `Short` (signed). Длина RDATA — беззнаковое 16-битное поле. При длинах > 32767 будет отрицательное значение.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/RData.kt:6`*

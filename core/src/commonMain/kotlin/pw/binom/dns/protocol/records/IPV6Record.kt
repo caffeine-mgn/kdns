@@ -21,7 +21,7 @@ fun RData.Companion.ipv6(
     b9: UByte, b10: UByte, b11: UByte, b12: UByte,
     b13: UByte, b14: UByte, b15: UByte, b16: UByte
 ) = RData(
-    byteArrayOf(
+    raw = byteArrayOf(
         b1.toByte(),
         b2.toByte(),
         b3.toByte(),
@@ -38,7 +38,9 @@ fun RData.Companion.ipv6(
         b14.toByte(),
         b15.toByte(),
         b16.toByte()
-    ), 0, 0
+    ),
+    offset = 0,
+    size = 16,
 )
 
 fun RData.Companion.ipv6(address: String): RData {

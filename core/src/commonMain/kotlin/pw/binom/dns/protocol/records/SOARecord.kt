@@ -55,5 +55,13 @@ data class SOARecord(
     }
 }
 
-fun RData.Companion.soa(source: SOARecord) = RData(source.toByteArray(), 0, 0)
+fun RData.Companion.soa(source: SOARecord): RData {
+    val data = source.toByteArray()
+    return RData(
+        raw = data,
+        offset = 0,
+        size = data.size.toShort(),
+    )
+}
+
 fun RData.soa() = SOARecord.from(raw, offset)

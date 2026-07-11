@@ -25,7 +25,15 @@ class MxRecord(
     }
 }
 
-fun RData.Companion.mx(record: MxRecord) = RData(record.toByteArray(), 0, 0)
+fun RData.Companion.mx(record: MxRecord): RData {
+    val data = record.toByteArray()
+    return RData(
+        raw = data,
+        offset = 0,
+        size = data.size.toShort(),
+    )
+}
+
 fun RData.Companion.mx(
     preference: UShort,
     exchange: String,

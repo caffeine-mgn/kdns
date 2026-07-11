@@ -8,7 +8,12 @@ import pw.binom.dns.protocol.utils.StringUtils
 fun RData.Companion.txt(data: String): RData {
     val buffer = Buffer()
     StringUtils.write(data, buffer)
-    return RData(buffer.readByteArray(), 0, 0)
+    val bytes = buffer.readByteArray()
+    return RData(
+        raw = bytes,
+        offset = 0,
+        size = bytes.size.toShort(),
+    )
 }
 
 fun RData.txt(): String {
