@@ -15,6 +15,7 @@ import pw.binom.dns.protocol.records.hinfo
 import pw.binom.dns.protocol.records.ipv4
 import pw.binom.dns.protocol.records.ipv6
 import pw.binom.dns.protocol.records.mx
+import pw.binom.dns.protocol.records.OptRecord
 import pw.binom.dns.protocol.records.soa
 import pw.binom.dns.protocol.records.txt
 import pw.binom.dns.protocol.utils.DomainName
@@ -61,6 +62,7 @@ class DnsProtocolTest {
         assertEquals(33u, DnsType.SRV.raw)
         assertEquals(257u, DnsType.CAA.raw)
         assertEquals(65u, DnsType.HTTPS.raw)
+        assertEquals(41u, DnsType.OPT.raw)
         assertEquals(255u, DnsType.ANY.raw)
     }
 
@@ -509,7 +511,7 @@ class DnsProtocolTest {
     fun `normalizedRdata falls back to raw bytes for unsupported type`() {
         val raw = byteArrayOf(0, 0, 0, 0, 1, 2, 3, 4)
         val rd = RData(raw, offset = 4, size = 4u)
-        val resource = Resource("test", DnsType.SRV, DnsClass.IN, 300u, rd)
+        val resource = Resource("test", DnsType.DS, DnsClass.IN, 300u, rd)
         val normalized = resource.normalizedRdata()
         assertNotNull(normalized)
         assertEquals(0, normalized.offset)
@@ -739,5 +741,95 @@ class DnsProtocolTest {
         assertEquals(DnsType.A.raw, restored.queries[0].type.raw)
         assertEquals(DnsType.AAAA.raw, restored.queries[1].type.raw)
         assertEquals(DnsType.MX.raw, restored.queries[2].type.raw)
+    }
+
+    // ========================================================================
+    // EDNS(0) — OPT
+    // ========================================================================
+
+    @Test
+    fun `OptRecord parses packed TTL fields`() {
+        val rdata = RData(byteArrayOf(), 0, 0u)
+        val opt = OptRecord.from(clazz = 1232u, ttl = 0u, rdata = rdata)
+        assertEquals(1232u, opt.udpPayloadSize)
+        assertEquals(0u, opt.extendedRcode)
+        assertEquals(0u, opt.version)
+        assertEquals(false, opt.doBit)
+    }
+
+    @Test
+    fun `OptRecord parses DO bit and extended RCODE`() {
+        // DO bit = bit 15, extended RCODE = bits 24-31
+        val ttl = (0x01u shl 24) or (0x01u shl 15) // extendedRcode=1, version=0, DO=true
+        val rdata = RData(byteArrayOf(), 0, 0u)
+        val opt = OptRecord.from(clazz = 4096u, ttl = ttl, rdata = rdata)
+        assertEquals(4096u, opt.udpPayloadSize)
+        assertEquals(1u, opt.extendedRcode)
+        assertEquals(0u, opt.version)
+        assertEquals(true, opt.doBit)
+    }
+
+    @Test
+    fun `OptRecord roundtrip via Resource write and read`() {
+        val optRdata = RData(byteArrayOf(0x00, 0x01, 0x00, 0x02), 0, 4u) // dummy EDNS option
+        val ttl = (0x00u shl 24) or (0x00u shl 16) or (0x01u shl 15) // DO=1
+        val original = Resource(
+            name = "",
+            type = DnsType.OPT,
+            clazz = DnsClass(1232u),
+            ttl = ttl,
+            rdata = optRdata,
+        )
+
+        val buffer = Buffer()
+        original.write(buffer)
+        val bytes = buffer.readByteArray()
+        val (restored, _) = Resource.read(bytes, 0)
+
+        assertEquals("", restored.name)
+        assertEquals(DnsType.OPT.raw, restored.type.raw)
+        assertEquals(1232u, restored.clazz.raw)
+        assertEquals(ttl, restored.ttl)
+        assertTrue(restored.rdata.subData.contentEquals(optRdata.subData))
+    }
+
+    @Test
+    fun `OptRecord full roundtrip via DnsPackage`() {
+        val header = DnsHeader(
+            id = 42, qr = false, opcode = Opcode.QUERY,
+            aa = false, tc = false, rd = true, ra = false, z = 0, rcode = RCode.NOERROR,
+        )
+        val question = Question("example.com", DnsType.A, DnsClass.IN)
+        val optRdata = RData(byteArrayOf(), 0, 0u)
+        val optTtl = (0x00u shl 24) or (0x00u shl 16) // no extended RCODE, version=0, no DO
+        val optResource = Resource(
+            name = "",
+            type = DnsType.OPT,
+            clazz = DnsClass(1232u),
+            ttl = optTtl,
+            rdata = optRdata,
+        )
+
+        val pkg = DnsPackage(
+            header = header,
+            queries = listOf(question),
+            answer = emptyList(),
+            authority = emptyList(),
+            additional = listOf(optResource),
+        )
+
+        val buffer = Buffer()
+        pkg.write(buffer)
+        val bytes = buffer.readByteArray()
+        val restored = DnsPackage.read(bytes)
+
+        assertEquals(1, restored.queries.size)
+        assertEquals(1, restored.additional.size)
+
+        val opt = restored.additional.first()
+        assertEquals("", opt.name)
+        assertEquals(DnsType.OPT.raw, opt.type.raw)
+        assertEquals(1232u, opt.clazz.raw)
+        assertEquals(optTtl, opt.ttl)
     }
 }

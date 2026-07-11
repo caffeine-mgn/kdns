@@ -71,6 +71,11 @@ value class DnsType(val raw: UShort) {
         val HTTPS = DnsType(65u)
 
         /**
+         * EDNS(0) OPT pseudo-record (RFC 6891)
+         */
+        val OPT = DnsType(41u)
+
+        /**
          * Только в вопросе — «любой тип» (ныне не рекомендуется)
          */
         val ANY = DnsType(255u)
