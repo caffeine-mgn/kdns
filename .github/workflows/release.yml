@@ -64,8 +64,10 @@ jobs:
         env:
           GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
         run: |
-          # Ключ в GitHub Secrets одной строкой — кодируем в base64 для безопасной передачи
-          KEY_B64=$(echo -n "$GPG_KEY" | base64 -w0)
+          # Конвертируем \n в реальные переносы, затем base64
+          KEY_B64=$(printf '%b' "$GPG_KEY" | base64 -w0)
+          echo 'Key:'
+          echo $KEY_B64
           ./gradlew :core:publishToMavenCentral \
             -Pversion=${{ github.ref_name }} \
             -PsigningInMemoryKey="$KEY_B64" \
