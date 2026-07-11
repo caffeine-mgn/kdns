@@ -76,6 +76,21 @@ value class DnsType(val raw: UShort) {
         val OPT = DnsType(41u)
 
         /**
+         * DNSSEC — RRSIG (RFC 4034)
+         */
+        val RRSIG = DnsType(46u)
+
+        /**
+         * DNSSEC — NSEC (RFC 4034)
+         */
+        val NSEC = DnsType(47u)
+
+        /**
+         * DNSSEC — NSEC3 (RFC 5155)
+         */
+        val NSEC3 = DnsType(50u)
+
+        /**
          * Только в вопросе — «любой тип» (ныне не рекомендуется)
          */
         val ANY = DnsType(255u)

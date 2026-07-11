@@ -63,6 +63,9 @@ class DnsProtocolTest {
         assertEquals(257u, DnsType.CAA.raw)
         assertEquals(65u, DnsType.HTTPS.raw)
         assertEquals(41u, DnsType.OPT.raw)
+        assertEquals(46u, DnsType.RRSIG.raw)
+        assertEquals(47u, DnsType.NSEC.raw)
+        assertEquals(50u, DnsType.NSEC3.raw)
         assertEquals(255u, DnsType.ANY.raw)
     }
 
