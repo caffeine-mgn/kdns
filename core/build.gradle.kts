@@ -31,9 +31,11 @@ if (skPass != null) {
 
 // ======== Явная настройка signing для CI ========
 if (sk != null && skId != null && skPass != null) {
-    extensions.configure<org.gradle.plugins.signing.SigningExtension>("signing") {
-        useInMemoryPgpKeys(sk, skId, skPass)
-        logger.lifecycle("[signing] Configured in-memory PGP signing: keyId=${skId}")
+    pluginManager.withPlugin("signing") {
+        extensions.configure<org.gradle.plugins.signing.SigningExtension>("signing") {
+            useInMemoryPgpKeys(sk, skId, skPass)
+            logger.lifecycle("[signing] Configured in-memory PGP signing: keyId=${skId}")
+        }
     }
 }
 
