@@ -11,9 +11,9 @@ class MxRecord(
     val exchange: String,
 ) {
     companion object {
-        fun from(data: ByteArray) = MxRecord(
-            preference = readShort(data, 0).toUShort(),
-            exchange = DomainName.readDns(data, Short.SIZE_BYTES).first,
+        fun from(data: ByteArray, offset: Int = 0) = MxRecord(
+            preference = readShort(data, offset).toUShort(),
+            exchange = DomainName.readDns(data, offset + Short.SIZE_BYTES).first,
         )
     }
 
@@ -36,4 +36,4 @@ fun RData.Companion.mx(
     )
 )
 
-fun RData.mx() = MxRecord.from(raw)
+fun RData.mx() = MxRecord.from(raw, offset)

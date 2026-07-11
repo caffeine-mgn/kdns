@@ -24,11 +24,9 @@
 
 ## 🟠 Серьёзные проблемы
 
-- [ ] **#6** RData — дуальная семантика поля `raw`. При парсинге `raw = весь DNS-пакет`, при конструировании через фабрики `raw = только RDATA`. Фундаментальная дизайн-проблема, затрагивающая Resource.write(), все Record.from() и subData.  
-  *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/RData.kt:6-8`*
-
-- [ ] **#7** MxRecord.from() принимает `raw` (весь буфер) и читает domain name с позиции 2, игнорируя `RData.offset`. Для MX-записи не в начале буфера чтение будет с неверной позиции.  
+- [x] **#7** MxRecord.from() принимает `raw` (весь буфер) и читает domain name с позиции 2, игнорируя `RData.offset`. Для MX-записи не в начале буфера чтение будет с неверной позиции.
   *Файлы: `core/src/commonMain/kotlin/pw/binom/dns/protocol/records/MxRecord.kt:12-15`, `RData.kt:39`*
+  ✅ Исправлено: добавлен параметр `offset`, передаётся `RData.offset`
 
 - [ ] **#8** Все фабрики RData (cname, ns, ptr, ipv4, ipv6, mx, soa, txt, hinfo) передают `size=0`. `subData` всегда пуст для сконструированных записей.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/RData.kt:11-13`*
