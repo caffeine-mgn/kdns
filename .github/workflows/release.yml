@@ -22,72 +22,20 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Check secrets
-        run: |
-          echo "=== Проверка secrets ==="
-          
-          if [ -z "${{ secrets.MAVEN_CENTRAL_USERNAME }}" ]; then
-            echo "MAVEN_CENTRAL_USERNAME: пустой ❌"
-          else
-            LEN="${{ secrets.MAVEN_CENTRAL_USERNAME }}" && echo "MAVEN_CENTRAL_USERNAME: OK (длина ${#LEN})"
-          fi
-          
-          if [ -z "${{ secrets.MAVEN_CENTRAL_PASSWORD }}" ]; then
-            echo "MAVEN_CENTRAL_PASSWORD: пустой ❌"
-          else
-            LEN="${{ secrets.MAVEN_CENTRAL_PASSWORD }}" && echo "MAVEN_CENTRAL_PASSWORD: OK (длина ${#LEN})"
-          fi
-          
-          if [ -z "${{ secrets.GPG_KEY_ID }}" ]; then
-            echo "GPG_KEY_ID: пустой ❌"
-          else
-            echo "GPG_KEY_ID: OK (длина ${#GPG_KEY_ID})"
-          fi
-          
-          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ]; then
-            echo "GPG_PRIVATE_KEY: пустой ❌"
-          else
-            HEADER="${GPG_PRIVATE_KEY:0:30}"
-            echo "GPG_PRIVATE_KEY: OK (длина ${#GPG_PRIVATE_KEY}, начинается с: $HEADER...)"
-          fi
-          
-          if [ -z "${{ secrets.GPG_PASSWORD }}" ]; then
-            echo "GPG_PASSWORD: пустой ❌"
-          else
-            LEN="${{ secrets.GPG_PASSWORD }}" && echo "GPG_PASSWORD: OK (длина ${#LEN})"
-          fi
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-
       - name: Publish to Maven Central
         env:
           GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSWORD }}
         run: |
-          set +e
-          # Импортируем ключ
-          printf '%b' "$GPG_KEY" | gpg --batch --import --passphrase "$GPG_PASSPHRASE" 2>&1
-          echo "Import done, exit code: $?"
-          # Экспортируем в binary secring
-          gpg --batch --yes --export-secret-keys > /tmp/secring.gpg 2>&1
-          EC=$?
-          echo "Export done, exit code: $EC, size: $(wc -c < /tmp/secring.gpg) bytes"
-          set -e
+          # convert \n -> real newlines, store in var
+          IN_MEMORY_KEY="$(printf '%b' "$GPG_KEY")"
           
           ./gradlew :core:publishToMavenCentral \
             -Pversion=${{ github.ref_name }} \
-            -Psigning.keyId=$GPG_KEY_ID \
-            -Psigning.password="$GPG_PASSPHRASE" \
-            -Psigning.secretKeyRingFile=/tmp/secring.gpg \
-            -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
-            -PmavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }}
-          
-          ./gradlew :core:publishToMavenCentral \
-            -Pversion=${{ github.ref_name }} \
-            -Psigning.keyId=$GPG_KEY_ID \
-            -Psigning.password="$GPG_PASSPHRASE" \
-            -Psigning.secretKeyRingFile=/tmp/secring.gpg \
+            -PsigningInMemoryKey="$IN_MEMORY_KEY" \
+            -PsigningInMemoryKeyId="$GPG_KEY_ID" \
+            -PsigningInMemoryKeyPassword="$GPG_PASSPHRASE" \
+            -PsigningInMemoryKeyIsBase64=false \
             -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
             -PmavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }}
