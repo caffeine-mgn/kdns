@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.gradle.plugins.signing.SigningExtension
+import java.util.Base64
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -95,5 +97,23 @@ mavenPublishing {
             developerConnection.set("scm:git:ssh://github.com/caffeine-mgn/kdns.git")
             url.set("https://github.com/caffeine-mgn/kdns")
         }
+    }
+}
+
+pluginManager.withPlugin("signing") {
+    val key = providers.gradleProperty("signingInMemoryKey").orNull
+    val keyId = providers.gradleProperty("signingInMemoryKeyId").orNull
+    val password = providers.gradleProperty("signingInMemoryKeyPassword").orNull
+    val isBase64 = providers.gradleProperty("signingInMemoryKeyIsBase64").orNull?.toBoolean() ?: false
+
+    if (key != null && keyId != null && password != null) {
+        val decodedKey = if (isBase64) {
+            String(Base64.getDecoder().decode(key))
+        } else {
+            key.replace("\\n", "\n")
+        }
+        logger.lifecycle("[signing] Using in-memory PGP key, length=${decodedKey.length}, isBase64=${isBase64}")
+        extensions.getByType(SigningExtension::class.java)
+            .useInMemoryPgpKeys(decodedKey, keyId, password)
     }
 }
