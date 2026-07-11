@@ -103,7 +103,10 @@ pluginManager.withPlugin("signing") {
     val keyId = providers.gradleProperty("signingInMemoryKeyId").orNull
     val password = providers.gradleProperty("signingInMemoryKeyPassword").orNull
     if (key != null && keyId != null && password != null) {
-        val normalizedKey = key.replace("\\n", "\n")
+        val normalizedKey = key
+            .replace("\\n", "\n")  // resolve double-escaped \\n (rare)
+            .replace("\n", "
+")     // resolve single-escaped \n -> real newline (.properties / GH secrets)
         logger.lifecycle("[signing] Normalized key via build.gradle.kts, length=${normalizedKey.length}")
         extensions.getByType(org.gradle.plugins.signing.SigningExtension::class.java)
             .useInMemoryPgpKeys(normalizedKey, keyId, password)

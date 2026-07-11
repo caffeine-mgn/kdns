@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ServerStates">
+    <option name="serversStates">
+      <map>
+        <entry key="global:Jira" value="CONNECTED" />
+        <entry key="global:SearXNG" value="CONNECTED" />
+        <entry key="global:WebFetch" value="CONNECTED" />
+        <entry key="project:IDE MCP Server" value="CONNECTED" />
+        <entry key="project:github" value="CONNECTED" />
+      </map>
+    </option>
+  </component>
+</project>

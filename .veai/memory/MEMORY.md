@@ -1,0 +1,1 @@
+- [github-actions-cicd-publish](github-actions-cicd-publish-d316df1fca1e.md) — GitHub Actions CI/CD for Maven Central auto-publish via vanniktech plugin
