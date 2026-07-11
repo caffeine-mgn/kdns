@@ -72,9 +72,22 @@ jobs:
           gpg --list-keys --keyid-format LONG 2>&1 || true
           gpg --list-secret-keys --keyid-format LONG 2>&1 || true
           
-          # Экспортируем в keyring для Gradle (без фильтра по ID — subkey != primary key)
-          gpg --batch --yes --export-secret-keys -a > /tmp/secring.gpg 2>&1
-          echo "Exported secret key ring"
+          # Экспортируем в keyring для Gradle (без фильтрации)
+          echo "Exporting secret keys..."
+          gpg --batch --yes --export-secret-keys -a > /tmp/secring.gpg 2>&1; EXITCODE=$?
+          echo "gpg export exit code: $EXITCODE"
+          if [ $EXITCODE -ne 0 ]; then
+            echo "gpg export failed, checking keybox..."
+            gpgconf --kill gpg-agent 2>&1 || true
+            gpg --batch --yes --export-secret-keys -a > /tmp/secring.gpg 2>&1 || true
+          fi
+          if [ -s /tmp/secring.gpg ]; then
+            echo "secring.gpg created, size: $(wc -c < /tmp/secring.gpg) bytes"
+            head -3 /tmp/secring.gpg
+          else
+            echo "ERROR: secring.gpg is empty or missing"
+            exit 2
+          fi
           
           ./gradlew :core:publishToMavenCentral \
             -Pversion=${{ github.ref_name }} \
