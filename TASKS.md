@@ -7,6 +7,7 @@
 - [x] **#2** DNSSEC — парсеры RRSIG, NSEC, NSEC3, DS, DNSKEY
   ✅ DsRecord, DnskeyRecord, RrsigRecord, NsecRecord, Nsec3Record + типы в DnsType
 - [ ] **#3** TSIG / SIG(0) (RFC 2845) — подписанные транзакции
+  ⏭ Пропущено: требует HMAC-криптографии, которой нет в KMP common stdlib
 - [x] **#4** Dynamic Updates (RFC 2136) — парсинг/сборка update-сообщений, PREREQUISITE, NONE/ANY
   ✅ DnsUpdate: zone/prerequisite/update/additional, валидация OPCODE
 - [x] **#5** Парсеры SRV, CAA, HTTPS — типы в DnsType есть, парсеров нет

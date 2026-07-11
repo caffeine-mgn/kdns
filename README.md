@@ -1,12 +1,15 @@
 # kDNS
 
-**kDNS** is a Kotlin Multiplatform library for parsing, constructing, and serializing DNS protocol messages. No external DNS resolver — just a pure DNS protocol implementation.
+**kDNS** is a Kotlin Multiplatform library for parsing, constructing, and serializing DNS protocol messages. No external DNS resolver, no network layer — just a pure DNS wire format implementation.
 
 ## Features
 
 - **Pure DNS protocol** — parse and build DNS messages from scratch
 - **Multiplatform** — JVM, JS, Wasm, Linux, macOS, iOS, tvOS, Windows (mingw)
-- **Record types** — A, AAAA, CNAME, MX, SOA, NS, PTR, TXT, HINFO
+- **Record types** — A, AAAA, CNAME, MX, SOA, NS, PTR, TXT, HINFO, SRV, CAA, HTTPS
+- **DNSSEC** — DS, DNSKEY, RRSIG, NSEC, NSEC3 parsers
+- **EDNS(0)** — OPT pseudo-record with UDP payload size, DO bit, extended RCODE
+- **Dynamic Updates** (RFC 2136) — typed API for zone updates with prerequisites
 - **DNS name compression** — full support for RFC 1035 pointer-based compression
 - **IDN support** — Punycode encode/decode for internationalized domain names
 - **Minimal dependencies** — only `kotlinx-io-core`
@@ -139,7 +142,7 @@ All types live under `pw.binom.dns.protocol`.
 | `Resource` | A resource record (name + type + class + TTL + RData) |
 | `RData` | Record data — keeps a view into the original buffer |
 | `DnsClass` | DNS class (`IN`, `CH`, `HS`, `NONE`, `ANY`) |
-| `DnsType` | DNS record type (`A`, `AAAA`, `CNAME`, `MX`, `SOA`, `NS`, `PTR`, `TXT`, `SRV`, etc.) |
+| `DnsType` | DNS record type (`A`, `AAAA`, `CNAME`, `MX`, `SOA`, `NS`, `PTR`, `TXT`, `SRV`, `CAA`, `HTTPS`, `DS`, `DNSKEY`, `RRSIG`, `NSEC`, `NSEC3`, `OPT`, `ANY`, etc.) |
 | `Opcode` | DNS operation code (`QUERY`, `IQUERY`, `STATUS`, `NOTIFY`, `UPDATE`, `DSO`) |
 | `RCode` | DNS response code (`NOERROR`, `NXDOMAIN`, `SERVFAIL`, `REFUSED`, etc.) |
 
@@ -157,6 +160,14 @@ rdata.mx()          // MxRecord
 rdata.soa()         // SOARecord
 rdata.txt()         // String
 rdata.hinfo()       // HINFORecord
+rdata.srv()         // SrvRecord
+rdata.caa()         // CaaRecord
+rdata.https()       // HttpsRecord
+rdata.ds()          // DsRecord
+rdata.dnskey()      // DnskeyRecord
+rdata.rrsig()       // RrsigRecord
+rdata.nsec()        // NsecRecord
+rdata.nsec3()       // Nsec3Record
 ```
 
 And factory functions on `RData.Companion`:
@@ -168,7 +179,53 @@ RData.cname("example.com")
 RData.mx(preference = 10u, exchange = "mail.example.com")
 RData.soa(SOARecord(mname = "ns1.example.com", ...))
 RData.txt("v=spf1 include:_spf.example.com ~all")
+RData.srv(priority = 10u, weight = 5u, port = 443u, target = "srv.example.com")
+RData.caa(flags = 0u, tag = "issue", value = "letsencrypt.org")
+RData.https(priority = 1u, target = "www.example.com")
+RData.ds(DsRecord(...))
+RData.dnskey(DnskeyRecord(...))
+RData.rrsig(RrsigRecord(...))
 ```
+
+### EDNS(0) / OPT
+
+EDNS(0) OPT pseudo-records appear in the additional section. Use `OptRecord.from(resource.clazz, resource.ttl, resource.rdata)` to read the typed fields:
+
+```kotlin
+val opt = pkg.additional
+    .find { it.type == DnsType.OPT }
+    ?.let { OptRecord.from(it.clazz.raw, it.ttl, it.rdata) }
+
+println("UDP payload size: ${opt?.udpPayloadSize}")
+println("DO bit: ${opt?.doBit}")
+```
+
+### Dynamic Updates (RFC 2136)
+
+`DnsUpdate` provides a semantic wrapper over the standard DNS message format for zone updates:
+
+```kotlin
+val update = DnsUpdate(
+    header = DnsHeader(id = 42, qr = false, opcode = Opcode.UPDATE, ...),
+    zone = Question("example.com", DnsType.SOA, DnsClass.IN),
+    prerequisite = listOf(
+        // Assert that host.example.com AAAA does NOT exist
+        Resource("host.example.com", DnsType.AAAA, DnsClass.NONE, 0u, ...),
+    ),
+    update = listOf(
+        // Add A record
+        Resource("host.example.com", DnsType.A, DnsClass.IN, 300u, RData.ipv4("10.0.0.1")),
+    ),
+)
+
+val buffer = Buffer()
+update.write(buffer)
+socket.send(buffer.readByteArray())
+```
+
+### TSIG / SIG(0)
+
+Not implemented. TSIG requires HMAC cryptography, which is unavailable in Kotlin/Common stdlib without a third-party library.
 
 ## Supported targets
 
@@ -176,11 +233,12 @@ RData.txt("v=spf1 include:_spf.example.com ~all")
 |---|---|
 | JVM (1.8+) | ✅ |
 | JS (Browser + Node.js) | ✅ |
-| Wasm (WasmJs) | ✅ |
+| Wasm (WasmJs, WasmWasi) | ✅ |
 | Linux (x64, arm64) | ✅ |
 | macOS (x64, arm64) | ✅ |
 | iOS (x64, arm64, simulator) | ✅ |
 | tvOS (x64, arm64, simulator) | ✅ |
+| watchOS (x64, arm32, arm64, simulator) | ✅ |
 | Windows (mingw x64) | ✅ |
 
 ## License

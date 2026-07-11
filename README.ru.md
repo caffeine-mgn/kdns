@@ -1,12 +1,15 @@
 # kDNS
 
-**kDNS** — это Kotlin Multiplatform библиотека для разбора, создания и сериализации DNS-сообщений. Не является DNS-резолвером — чистая реализация протокола DNS.
+**kDNS** — это Kotlin Multiplatform библиотека для разбора, создания и сериализации DNS-сообщений. Не является DNS-резолвером и не содержит сетевого слоя — только чистый wire format протокола.
 
 ## Возможности
 
 - **Чистый протокол DNS** — парсинг и сборка DNS-сообщений «с нуля»
 - **Мультиплатформа** — JVM, JS, Wasm, Linux, macOS, iOS, tvOS, Windows (mingw)
-- **Типы записей** — A, AAAA, CNAME, MX, SOA, NS, PTR, TXT, HINFO
+- **Типы записей** — A, AAAA, CNAME, MX, SOA, NS, PTR, TXT, HINFO, SRV, CAA, HTTPS
+- **DNSSEC** — парсеры DS, DNSKEY, RRSIG, NSEC, NSEC3
+- **EDNS(0)** — OPT pseudo-запись с UDP payload size, DO bit, extended RCODE
+- **Dynamic Updates** (RFC 2136) — типизированный API для обновления зон с предусловиями
 - **Сжатие имён** — полная поддержка компрессии на основе указателей (RFC 1035)
 - **IDN** — кодирование/декодирование Punycode для интернациональных доменов
 - **Минимум зависимостей** — только `kotlinx-io-core`
@@ -139,7 +142,7 @@ val normalized = resource.normalizedRdata()
 | `Resource` | Ресурсная запись (имя + тип + класс + TTL + RData) |
 | `RData` | Данные записи — представление (view) исходного буфера |
 | `DnsClass` | Класс DNS (`IN`, `CH`, `HS`, `NONE`, `ANY`) |
-| `DnsType` | Тип записи (`A`, `AAAA`, `CNAME`, `MX`, `SOA`, `NS`, `PTR`, `TXT`, `SRV`, и др.) |
+| `DnsType` | Тип записи (`A`, `AAAA`, `CNAME`, `MX`, `SOA`, `NS`, `PTR`, `TXT`, `SRV`, `CAA`, `HTTPS`, `DS`, `DNSKEY`, `RRSIG`, `NSEC`, `NSEC3`, `OPT`, `ANY`, и др.) |
 | `Opcode` | Код операции (`QUERY`, `IQUERY`, `STATUS`, `NOTIFY`, `UPDATE`, `DSO`) |
 | `RCode` | Код ответа (`NOERROR`, `NXDOMAIN`, `SERVFAIL`, `REFUSED`, и др.) |
 
@@ -157,6 +160,14 @@ rdata.mx()          // MxRecord
 rdata.soa()         // SOARecord
 rdata.txt()         // String
 rdata.hinfo()       // HINFORecord
+rdata.srv()         // SrvRecord
+rdata.caa()         // CaaRecord
+rdata.https()       // HttpsRecord
+rdata.ds()          // DsRecord
+rdata.dnskey()      // DnskeyRecord
+rdata.rrsig()       // RrsigRecord
+rdata.nsec()        // NsecRecord
+rdata.nsec3()       // Nsec3Record
 ```
 
 И фабричные функции на `RData.Companion`:
@@ -168,7 +179,53 @@ RData.cname("example.com")
 RData.mx(preference = 10u, exchange = "mail.example.com")
 RData.soa(SOARecord(mname = "ns1.example.com", ...))
 RData.txt("v=spf1 include:_spf.example.com ~all")
+RData.srv(priority = 10u, weight = 5u, port = 443u, target = "srv.example.com")
+RData.caa(flags = 0u, tag = "issue", value = "letsencrypt.org")
+RData.https(priority = 1u, target = "www.example.com")
+RData.ds(DsRecord(...))
+RData.dnskey(DnskeyRecord(...))
+RData.rrsig(RrsigRecord(...))
 ```
+
+### EDNS(0) / OPT
+
+OPT pseudo-записи находятся в дополнительной секции. Используйте `OptRecord.from(resource.clazz, resource.ttl, resource.rdata)`:
+
+```kotlin
+val opt = pkg.additional
+    .find { it.type == DnsType.OPT }
+    ?.let { OptRecord.from(it.clazz.raw, it.ttl, it.rdata) }
+
+println("UDP payload size: ${opt?.udpPayloadSize}")
+println("DO bit: ${opt?.doBit}")
+```
+
+### Dynamic Updates (RFC 2136)
+
+`DnsUpdate` — семантическая обёртка над стандартным DNS-сообщением для обновления зон:
+
+```kotlin
+val update = DnsUpdate(
+    header = DnsHeader(id = 42, qr = false, opcode = Opcode.UPDATE, ...),
+    zone = Question("example.com", DnsType.SOA, DnsClass.IN),
+    prerequisite = listOf(
+        // Утверждаем, что host.example.com AAAA НЕ существует
+        Resource("host.example.com", DnsType.AAAA, DnsClass.NONE, 0u, ...),
+    ),
+    update = listOf(
+        // Добавляем A запись
+        Resource("host.example.com", DnsType.A, DnsClass.IN, 300u, RData.ipv4("10.0.0.1")),
+    ),
+)
+
+val buffer = Buffer()
+update.write(buffer)
+socket.send(buffer.readByteArray())
+```
+
+### TSIG / SIG(0)
+
+Не реализовано. TSIG требует HMAC-криптографии, которой нет в Kotlin/Common stdlib без внешних библиотек.
 
 ## Поддерживаемые платформы
 
@@ -176,11 +233,12 @@ RData.txt("v=spf1 include:_spf.example.com ~all")
 |---|---|
 | JVM (1.8+) | ✅ |
 | JS (Browser + Node.js) | ✅ |
-| Wasm (WasmJs) | ✅ |
+| Wasm (WasmJs, WasmWasi) | ✅ |
 | Linux (x64, arm64) | ✅ |
 | macOS (x64, arm64) | ✅ |
 | iOS (x64, arm64, simulator) | ✅ |
 | tvOS (x64, arm64, simulator) | ✅ |
+| watchOS (x64, arm32, arm64, simulator) | ✅ |
 | Windows (mingw x64) | ✅ |
 
 ## Лицензия
