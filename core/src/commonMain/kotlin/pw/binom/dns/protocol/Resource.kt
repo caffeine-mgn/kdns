@@ -25,7 +25,7 @@ data class Resource(
             offset += Short.SIZE_BYTES
             val ttl = readInt(data, offset).toUInt()
             offset += Int.SIZE_BYTES
-            val dataSize = readShort(data, offset)
+            val dataSize = readShort(data, offset).toUShort()
             offset += Short.SIZE_BYTES
             val resource= Resource(
                 name = name,
@@ -33,7 +33,7 @@ data class Resource(
                 clazz = DnsClass(clazz),
                 ttl = ttl,
                 rdata = RData(data, offset, dataSize),
-            ) to offset + dataSize
+            ) to offset + dataSize.toInt()
             return resource
         }
     }

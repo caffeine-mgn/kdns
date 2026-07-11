@@ -40,7 +40,7 @@ fun RData.Companion.ipv6(
         b16.toByte()
     ),
     offset = 0,
-    size = 16,
+    size = 16u,
 )
 
 fun RData.Companion.ipv6(address: String): RData {

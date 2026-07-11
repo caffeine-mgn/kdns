@@ -12,14 +12,14 @@ fun RData.Companion.txt(data: String): RData {
     return RData(
         raw = bytes,
         offset = 0,
-        size = bytes.size.toShort(),
+        size = bytes.size.toUShort(),
     )
 }
 
 fun RData.txt(): String {
     var pos = offset
     val result = StringBuilder()
-    while (pos < offset + size) {
+    while (pos < offset + size.toInt()) {
         val (str, newPos) = StringUtils.read(raw, pos)
         pos = newPos
         result.append(str)

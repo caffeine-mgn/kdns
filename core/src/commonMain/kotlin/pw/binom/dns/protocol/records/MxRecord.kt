@@ -30,7 +30,7 @@ fun RData.Companion.mx(record: MxRecord): RData {
     return RData(
         raw = data,
         offset = 0,
-        size = data.size.toShort(),
+        size = data.size.toUShort(),
     )
 }
 

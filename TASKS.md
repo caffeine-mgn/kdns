@@ -32,8 +32,9 @@
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/RData.kt:11-13`*
   ✅ Исправлено: size = raw.size во всех фабриках
 
-- [ ] **#9** RData.size объявлен как `Short` (signed). Длина RDATA — беззнаковое 16-битное поле. При длинах > 32767 будет отрицательное значение.  
+- [x] **#9** RData.size объявлен как `Short` (signed). Длина RDATA — беззнаковое 16-битное поле. При длинах > 32767 будет отрицательное значение.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/RData.kt:6`*
+  ✅ Исправлено: `Short` → `UShort`
 
 - [ ] **#10** NumberUtils (readInt/readShort) не проверяет границы массива перед обращением по индексу — `ArrayIndexOutOfBoundsException` при неверном offset.  
   *Файл: `core/src/commonMain/kotlin/pw/binom/dns/protocol/utils/NumberUtils.kt:3-13`*

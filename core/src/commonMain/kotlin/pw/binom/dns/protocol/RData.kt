@@ -3,9 +3,9 @@ package pw.binom.dns.protocol
 import pw.binom.dns.protocol.utils.DomainName
 import kotlin.jvm.JvmInline
 
-class RData(val raw: ByteArray, val offset: Int, val size: Short) {
+class RData(val raw: ByteArray, val offset: Int, val size: UShort) {
     val subData
-        get() = raw.copyOfRange(fromIndex = offset, toIndex = offset + size)
+        get() = raw.copyOfRange(fromIndex = offset, toIndex = offset + size.toInt())
 
     companion object {
         fun cname(name: String): RData {
@@ -13,7 +13,7 @@ class RData(val raw: ByteArray, val offset: Int, val size: Short) {
             return RData(
                 raw = data,
                 offset = 0,
-                size = data.size.toShort(),
+                size = data.size.toUShort(),
             )
         }
 
@@ -22,7 +22,7 @@ class RData(val raw: ByteArray, val offset: Int, val size: Short) {
             return RData(
                 raw = data,
                 offset = 0,
-                size = data.size.toShort(),
+                size = data.size.toUShort(),
             )
         }
 
@@ -31,7 +31,7 @@ class RData(val raw: ByteArray, val offset: Int, val size: Short) {
             return RData(
                 raw = data,
                 offset = 0,
-                size = data.size.toShort(),
+                size = data.size.toUShort(),
             )
         }
     }

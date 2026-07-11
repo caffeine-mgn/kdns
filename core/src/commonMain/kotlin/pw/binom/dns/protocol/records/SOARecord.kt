@@ -60,7 +60,7 @@ fun RData.Companion.soa(source: SOARecord): RData {
     return RData(
         raw = data,
         offset = 0,
-        size = data.size.toShort(),
+        size = data.size.toUShort(),
     )
 }
 

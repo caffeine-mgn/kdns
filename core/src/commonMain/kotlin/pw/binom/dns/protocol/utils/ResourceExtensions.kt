@@ -10,7 +10,7 @@ import pw.binom.dns.protocol.records.soa
 import pw.binom.dns.protocol.records.txt
 
 fun Resource.normalizedRdata(): RData? {
-    if (rdata.offset == 0 && rdata.size == rdata.raw.size.toShort()) {
+    if (rdata.offset == 0 && rdata.size == rdata.raw.size.toUShort()) {
         return rdata
     }
     return when (type) {

@@ -16,7 +16,7 @@ fun RData.Companion.ipv4(b1: UByte, b2: UByte, b3: UByte, b4: UByte) =
     RData(
         raw = byteArrayOf(b1.toByte(), b2.toByte(), b3.toByte(), b4.toByte()),
         offset = 0,
-        size = 4,
+        size = 4u,
     )
 
 fun RData.Companion.ipv4(address: String): RData {
