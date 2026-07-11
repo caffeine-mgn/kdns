@@ -63,14 +63,23 @@ jobs:
       - name: Publish to Maven Central
         env:
           GPG_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSWORD }}
         run: |
-          # Конвертируем \n в реальные переносы, затем base64
-          KEY_B64=$(printf '%b' "$GPG_KEY" | base64 -w0)
+          # Импортируем GPG ключ
+          printf '%b' "$GPG_KEY" | gpg --batch --import --passphrase "$GPG_PASSPHRASE" 2>&1
+          echo "GPG keys imported:"
+          gpg --list-keys --keyid-format LONG 2>&1 | grep -E "^pub|^sec"
+          
+          # Экспортируем в keyring для Gradle
+          KEY_ID=$(echo "$GPG_KEY_ID" | tr -d ' ')
+          gpg --batch --yes --export-secret-keys -a "$KEY_ID" > /tmp/secring.gpg 2>&1
+          echo "Exported secret key ring"
+          
           ./gradlew :core:publishToMavenCentral \
             -Pversion=${{ github.ref_name }} \
-            -PsigningInMemoryKey="$KEY_B64" \
-            -PsigningInMemoryKeyIsBase64=true \
-            -PsigningInMemoryKeyId=${{ secrets.GPG_KEY_ID }} \
-            -PsigningInMemoryKeyPassword=${{ secrets.GPG_PASSWORD }} \
+            -Psigning.keyId=$KEY_ID \
+            -Psigning.password="$GPG_PASSPHRASE" \
+            -Psigning.secretKeyRingFile=/tmp/secring.gpg \
             -PmavenCentralUsername=${{ secrets.MAVEN_CENTRAL_USERNAME }} \
             -PmavenCentralPassword=${{ secrets.MAVEN_CENTRAL_PASSWORD }}
